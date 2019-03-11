@@ -1,120 +1,81 @@
-# Pleroma
+# これは何？
 
-[Pleroma](https://pleroma.social/) is a federated social networking platform, compatible with GNU social and other OStatus implementations. It is free software licensed under the AGPLv3.
+Pleromaインスタンス、[鯖とサバト](https://sabbat.hexe.net/)のDockerComposeスクリプト
 
-It actually consists of two components: a backend, named simply Pleroma, and a user-facing frontend, named Pleroma-FE.
+# How to use
 
-Its main advantages are its lightness and speed.
+## Install
 
-![Pleroma](https://i.imgur.com/VftiTlR.png)
+### 前提条件
 
-*Pleromians trying to understand the memes*
+ - PleromaのプロセスはGID=1000/UID=1000で動かすものとします。
+ - PleromaもHTTPSを利用する機能があるが、そこはnginxに任せる。
+ - docker/docker-composeはセットアップしてあるものとする
 
-## Features
+### ソースコードの入手
 
-- Based on the elixir:alpine image
-- Ran as an unprivileged user
-- It works great
-
-Sadly, this is not a reusable (e.g. I can't upload it to the Docker Hub), because for now Pleroma needs to compile the configuration. 😢
-Thus you will need to build the image yourself, but I explain how to do it below.
-
-## Build-time variables
-
-- **`PLEROMA_VER`** : Pleroma version (latest commit of the [`develop` branch](https://git.pleroma.social/pleroma/pleroma) by default)
-- **`GID`**: group id (default: `911`)
-- **`UID`**: user id (default: `911`)
-
-## Usage
-
-### Installation
-
-Create a folder for your Pleroma instance. Inside, you should have `Dockerfile` and `docker-compose.yml` from this repo.
-
-Here is the `docker-compose.yml`. You should change the `POSTGRES_PASSWORD` variable.
-
-```yaml
-version: '2.3'
-
-services:
-  postgres:
-    image: postgres:9.6-alpine
-    container_name: pleroma_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: pleroma
-      POSTGRES_PASSWORD: pleroma
-      POSTGRES_DB: pleroma
-    volumes:
-      - ./postgres:/var/lib/postgresql/data
-
-  web:
-    build: .
-    image: pleroma
-    container_name: pleroma_web
-    restart: always
-    ports:
-      - "127.0.0.1:4000:4000"
-    volumes:
-      - ./uploads:/pleroma/uploads
-    depends_on:
-      - postgres
+```bash
+git clone git@github.com:fairy-rockets/docker-pleroma.git
+cd docker-pleroma
+git clone git@github.com:fairy-rockets/sabbat.git pleroma
 ```
 
-Create the upload and config folder and give write permissions for the uploads:
+### データフォルダの作成
 
-```sh
-mkdir uploads config
-chown -R 911:911 uploads
+```bash
+mkdir -p data/postgres
+mkdir -p data/uploads
 ```
 
-Pleroma needs the `citext` PostgreSQL extension, here is how to add it:
+### Postgresの起動とcitextの有効化
+
+PostgreSQLの`citext`（大文字小文字を無視して検索する機能らしい）が必要らしいので、それを有効にする。
 
 ```sh
 docker-compose up -d postgres
 docker exec -i pleroma_postgres psql -U pleroma -c "CREATE EXTENSION IF NOT EXISTS citext;"
-docker-compose down
 ```
 
-Configure Pleroma. Copy the following to `config/secret.exs`:
+### Pleromaの設定
+
+pleroma/config/prod.secret.exsを次のようにする：
 
 ```exs
 use Mix.Config
 
 config :pleroma, Pleroma.Web.Endpoint,
-   url: [host: "pleroma.domain.tld", scheme: "https", port: 443],
-   secret_key_base: "<use 'openssl rand -base64 48' to generate a key>"
+  url: [scheme: "https", host: "sabbat.hexe.net", port: 443],
+  protocol: "http",
+  secret_key_base: "<use 'openssl rand -base64 48' to generate a key>"
 
 config :pleroma, :instance,
-  name: "Pleroma",
-  email: "admin@email.tld",
-  limit: 5000,
-  registrations_open: true
-
-config :pleroma, :media_proxy,
-  enabled: false,
-  redirect_on_failure: true,
-  base_url: "https://cache.domain.tld"
+  name: "妖精⊸ロケット / 鯖とサバトを",
+  email: "psi@*io.org",
+  limit: 2048,
+  registrations_open: false
 
 # Configure your database
 config :pleroma, Pleroma.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "pleroma",
-  password: "pleroma",
+  password: "***ひみつ***",
   database: "pleroma",
   hostname: "postgres",
   pool_size: 10
+
+# docker-compose run --rm web mix web_push.gen.keypairの結果
+config :web_push_encryption, :vapid_details,
+  subject: "mailto:administrator@example.com",
+  public_key: "*****",
+  private_key: "*****"
+
 ```
 
-You need to change at least:
+### ビルド
 
-- `host`
-- `secret_key_base`
-- `email`
+Postgresはできあいのものを利用しているので、ビルドしなくてよい。Pleromaのみビルドする。
 
-Make sure your PostgreSQL parameters are ok.
-
-You can now build the image. 2 way of doing it:
+ただし、設定ファイルを書き換えるたびにビルドしないといけない（TODO: 結構掛かるのでここを短縮したい）。
 
 ```sh
 docker-compose build
@@ -122,39 +83,29 @@ docker-compose build
 docker build -t pleroma .
 ```
 
-I prefer the later because it's more verbose.
-
-Setup the database:
+### DBの設定
 
 ```sh
 docker-compose run --rm web mix ecto.migrate
 ```
 
-Get your web push keys and copy them to `secret.exs`:
+### 起動！
 
-```
-docker-compose run --rm web mix web_push.gen.keypair
-```
-
-You can now launch your instance:
-
-```sh
+```bash
 docker-compose up -d
 ```
 
-Check if everything went well with:
+### ログをチェックする
 
-```sh
+```bash
 docker logs -f pleroma_web
 ```
 
-You can now setup a Nginx reverse proxy in a container or on your host by using the [example Nginx config](https://git.pleroma.social/pleroma/pleroma/blob/develop/installation/pleroma.nginx).
+### nginxの設定をする
 
-### Update
+公式サイトの[Nginx config](https://git.pleroma.social/pleroma/pleroma/blob/develop/installation/pleroma.nginx)を参考にする。
 
-By default, the Dockerfile will be built from the latest commit of the `develop` branch as Pleroma does not have releases for now.
-
-Thus to update, just rebuild your image and recreate your containers:
+## Update
 
 ```sh
 docker-compose pull # update the PostgreSQL if needed
@@ -165,15 +116,7 @@ docker-compose run --rm web mix ecto.migrate # migrate the database if needed
 docker-compose up -d # recreate the containers if needed
 ```
 
-If you want to run a specific commit, you can use the `PLEROMA_VER` variable:
-
-```sh
-docker build -t pleroma . --build-arg PLEROMA_VER=a9203ab3
-```
-
-`a9203ab3` being the hash of the commit. (They're [here](https://git.pleroma.social/pleroma/pleroma/commits/develop))
-
-## Other Docker images
+# Other Docker images
 
 Here are other Pleroma Docker images that helped me build mine:
 
