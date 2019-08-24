@@ -1,6 +1,6 @@
 # これは何？
 
-Pleromaインスタンス、[鯖とサバト](https://sabbat.hexe.net/)のDockerComposeスクリプト
+Pleromaインスタンス、[鯖とサバトを](https://sabbat.hexe.net/)のDockerComposeスクリプト
 
 # How to use
 
