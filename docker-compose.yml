@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ***ひみつ***
       POSTGRES_DB: pleroma
     volumes:
-      - ./data/postgres/10:/var/lib/postgresql/data
+      - ./data/postgres/10:/var/lib/postgresql
 
   web:
     build: .
