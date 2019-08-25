@@ -23,7 +23,7 @@ git clone git@github.com:fairy-rockets/sabbat.git pleroma
 ### データフォルダの作成
 
 ```bash
-mkdir -p data/postgres
+mkdir -p data/postgres/10
 mkdir -p data/uploads
 ```
 
@@ -40,17 +40,22 @@ docker exec -i pleroma_postgres psql -U pleroma -c "CREATE EXTENSION IF NOT EXIS
 
 pleroma/config/prod.secret.exsを次のようにする：
 
-```exs
+
+```Elixir
 use Mix.Config
 
 config :pleroma, Pleroma.Web.Endpoint,
   url: [scheme: "https", host: "sabbat.hexe.net", port: 443],
   protocol: "http",
+  http: [ip: {0, 0, 0, 0}, port: 4000],
   secret_key_base: "<use 'openssl rand -base64 48' to generate a key>"
+
+config :logger, level: :debug
 
 config :pleroma, :instance,
   name: "妖精⊸ロケット / 鯖とサバトを",
-  email: "psi@*io.org",
+  email: "psi@***.org",
+  notify_email: "noreply@********.net",
   limit: 2048,
   registrations_open: false
 
@@ -65,10 +70,13 @@ config :pleroma, Pleroma.Repo,
 
 # docker-compose run --rm web mix web_push.gen.keypairの結果
 config :web_push_encryption, :vapid_details,
-  subject: "mailto:administrator@example.com",
+  subject: "mailto:noreply@*******.net",
   public_key: "*****",
   private_key: "*****"
 
+config :pleroma, :database, rum_enabled: false
+config :pleroma, :instance, static_dir: "/pleroma/static"
+config :pleroma, Pleroma.Uploaders.Local, uploads: "/pleroma/uploads"
 ```
 
 ### ビルド
@@ -105,7 +113,7 @@ docker logs -f pleroma_web
 
 公式サイトの[Nginx config](https://git.pleroma.social/pleroma/pleroma/blob/develop/installation/pleroma.nginx)を参考にする。
 
-## Update
+## Upgrade Pleroma
 
 ```sh
 docker-compose pull # update the PostgreSQL if needed
@@ -116,10 +124,13 @@ docker-compose run --rm web mix ecto.migrate # migrate the database if needed
 docker-compose up -d # recreate the containers if needed
 ```
 
-# Other Docker images
+## Upgrade Postgres
 
-Here are other Pleroma Docker images that helped me build mine:
+```bash
+docker-compose down
+tar -cJvf "data-$(date +%Y%m%d).tar.xz" data/
 
-- [potproject/docker-pleroma](https://github.com/potproject/docker-pleroma)
-- [rysiek/docker-pleroma](https://git.pleroma.social/rysiek/docker-pleroma)
-- [RX14/iscute.moe](https://github.com/RX14/kurisu.rx14.co.uk/blob/master/services/iscute.moe/pleroma/Dockerfile)
+docker run --rm \
+  -v $(pwd)/data/postgres:/var/lib/postgresql \
+  tianon/postgres-upgrade:9.6-to-10
+```
