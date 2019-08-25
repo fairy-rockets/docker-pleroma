@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: pleroma
-      POSTGRES_PASSWORD: ***ひみつ***
+      POSTGRES_PASSWORD: mc4Bk3ycucTfRewcgqSU2n6sxAYuZsjw
       POSTGRES_DB: pleroma
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
