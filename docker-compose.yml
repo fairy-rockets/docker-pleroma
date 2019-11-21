@@ -13,7 +13,8 @@ services:
       - ./data/postgres:/var/lib/postgresql/data
 
   web:
-    build: .
+    build:
+      context: ./web
     image: pleroma
     container_name: pleroma_web
     restart: always

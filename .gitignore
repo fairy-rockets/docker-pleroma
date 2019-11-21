@@ -1,4 +1,4 @@
 data/
-pleroma/
+web/pleroma/
 data*.tar.xz
 data*.tar.gz
