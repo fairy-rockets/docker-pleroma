@@ -1,0 +1,3 @@
+[submodule "web/pleroma"]
+	path = web/pleroma
+	url = git@github.com:fairy-rockets/sabbat.git
