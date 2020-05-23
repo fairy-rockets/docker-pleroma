@@ -13,6 +13,11 @@ services:
       - ./data/postgres:/var/lib/postgresql/data
     networks:
       - pleroma-link
+    logging:
+      driver: "json-file"
+      options:
+        max-file: '4'
+        max-size: '250m'
 
   web:
     build:
@@ -28,6 +33,11 @@ services:
       - ./data/uploads:/pleroma/uploads
     depends_on:
       - postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-file: '4'
+        max-size: '250m'
 
 networks:
   pleroma-link:
