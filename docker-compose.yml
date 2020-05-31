@@ -31,6 +31,7 @@ services:
       - planet-link
     volumes:
       - ./data/uploads:/pleroma/uploads
+      - ./web/instance:/pleroma/instance
     depends_on:
       - postgres
     logging:
