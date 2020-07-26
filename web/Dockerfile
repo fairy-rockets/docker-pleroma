@@ -1,42 +1,27 @@
-FROM elixir:1.10-alpine as build
+FROM elixir:1.10-alpine
 
-COPY ./pleroma .
+ENV UID=1000 \
+    GID=1000 \
+    MIX_ENV=prod
 
-ENV MIX_ENV=prod
+RUN apk -U upgrade \
+    && apk add --no-cache \
+       build-base \
+       git
 
-RUN apk add git gcc g++ musl-dev make &&\
-        echo "import Mix.Config" > config/prod.secret.exs &&\
-	mix local.hex --force &&\
-	mix local.rebar --force &&\
-	mix deps.get --only prod &&\
-	mkdir release &&\
-	mix release --path release
+RUN addgroup -g ${GID} pleroma \
+    && adduser -h /pleroma -s /bin/sh -D -G pleroma -u ${UID} pleroma
 
-FROM alpine:3.12
+COPY ./pleroma/ /pleroma
 
-ARG BUILD_DATE
-ARG VCS_REF
-
-ARG HOME=/opt/pleroma
-ARG DATA=/var/lib/pleroma
-
-RUN echo "http://nl.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories &&\
-	apk update &&\
-	apk add ncurses postgresql-client &&\
-	adduser --system --shell /bin/false --home ${HOME} pleroma &&\
-	mkdir -p ${DATA}/uploads &&\
-	mkdir -p ${DATA}/static &&\
-	chown -R pleroma ${DATA} &&\
-	mkdir -p /etc/pleroma &&\
-	chown -R pleroma /etc/pleroma
+WORKDIR pleroma
+RUN chown -R pleroma:pleroma /pleroma
 
 USER pleroma
+RUN mix local.rebar --force && \
+    mix local.hex --force && \
+    mix deps.get && \
+    mix compile
 
-COPY --from=build --chown=pleroma:0 /release ${HOME}
+CMD ["mix", "phx.server"]
 
-COPY ./prod.secret.exs /etc/pleroma/config.exs
-COPY ./entrypoint.sh ${HOME}
-
-EXPOSE 4000
-
-ENTRYPOINT ["/opt/pleroma/entrypoint.sh"]
