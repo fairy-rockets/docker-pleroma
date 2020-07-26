@@ -19,6 +19,23 @@ services:
         max-file: '4'
         max-size: '250m'
 
+  postgres-mon:
+    image: wrouesnel/postgres_exporter:latest
+    container_name: pleroma_postgres-mon
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DATA_SOURCE_NAME: "postgresql://pleroma:mc4Bk3ycucTfRewcgqSU2n6sxAYuZsjw@postgres:5432/?sslmode=disable"
+    networks:
+      - pleroma-link
+      - planet-link
+    logging:
+      driver: "json-file"
+      options:
+        max-file: '4'
+        max-size: '250m'
+
   web:
     build:
       context: ./web
