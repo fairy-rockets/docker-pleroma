@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:12.1-alpine
     container_name: pleroma_postgres
+    hostname: pleroma_postgres
     restart: always
     environment:
       POSTGRES_USER: pleroma
@@ -22,6 +23,7 @@ services:
   postgres-mon:
     image: wrouesnel/postgres_exporter:latest
     container_name: pleroma_postgres-mon
+    hostname: pleroma_postgres-mon
     restart: always
     depends_on:
       - postgres
