@@ -1,3 +1,2 @@
 data/
-data*.tar.xz
-data*.tar.gz
+/backup*
