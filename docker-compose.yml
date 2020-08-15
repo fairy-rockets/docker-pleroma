@@ -1,4 +1,4 @@
-version: '3.6'
+version: '3.7'
 
 services:
   postgres:
@@ -14,7 +14,7 @@ services:
     networks:
       - pleroma-link
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
         max-file: '4'
         max-size: '250m'
@@ -26,12 +26,12 @@ services:
     depends_on:
       - postgres
     environment:
-      DATA_SOURCE_NAME: "postgresql://pleroma:mc4Bk3ycucTfRewcgqSU2n6sxAYuZsjw@postgres:5432/?sslmode=disable"
+      DATA_SOURCE_NAME: 'postgresql://pleroma:mc4Bk3ycucTfRewcgqSU2n6sxAYuZsjw@postgres:5432/?sslmode=disable'
     networks:
       - pleroma-link
       - planet-link
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
         max-file: '4'
         max-size: '250m'
@@ -52,7 +52,7 @@ services:
     depends_on:
       - postgres
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
         max-file: '4'
         max-size: '250m'
