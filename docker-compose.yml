@@ -21,10 +21,10 @@ services:
         max-file: '4'
         max-size: '250m'
 
-  postgres-mon:
+  postgres-exporter:
     image: wrouesnel/postgres_exporter:latest
-    container_name: pleroma_postgres-mon
-    hostname: pleroma_postgres-mon
+    container_name: pleroma_postgres-exporter
+    hostname: pleroma_postgres-exporter
     restart: always
     depends_on:
       - postgres

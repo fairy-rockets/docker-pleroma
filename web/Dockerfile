@@ -4,10 +4,11 @@ ENV UID=1000 \
     GID=1000 \
     MIX_ENV=prod
 
-RUN apk -U upgrade \
-    && apk add --no-cache \
-       build-base \
-       git
+RUN echo "http://nl.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories &&\
+	apk -U upgrade &&\
+	apk add --no-cache \
+        exiftool imagemagick ncurses postgresql-client \
+        build-base git gcc g++ musl-dev make cmake
 
 RUN addgroup -g ${GID} pleroma \
     && adduser -h /pleroma -s /bin/sh -D -G pleroma -u ${UID} pleroma
