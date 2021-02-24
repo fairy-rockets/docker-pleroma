@@ -7,7 +7,7 @@ ENV UID=1000 \
 RUN echo "http://nl.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories &&\
 	apk -U upgrade &&\
 	apk add --no-cache \
-        exiftool imagemagick ncurses postgresql-client \
+        exiftool imagemagick ncurses postgresql-client file-dev\
         build-base git gcc g++ musl-dev make cmake
 
 RUN addgroup -g ${GID} pleroma \
