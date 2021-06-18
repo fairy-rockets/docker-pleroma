@@ -1,24 +1,42 @@
+.PHONY: all
+all: ps ;
 
-.PHONY:log
-log:
-	docker-compose logs -f --tail 100
-
-########################################################################################################################
-## up/down/restart
-########################################################################################################################
-
-.PHONY:up
-up:
+.PHONY: up
+up: ./var/postgres
 	docker-compose up -d
 
-.PHONY:down
+.PHONY: down
 down:
 	docker-compose down
 
-.PHONY: restart
-restart:
+.PHONY: reload
+reload:
 	$(MAKE) down
 	$(MAKE) up
+
+.PHONY: restart
+restart:
+	docker-compose restart
+
+.PHONY: build
+build:
+	docker-compose build
+
+.PHONY: pull
+pull:
+	docker-compose pull
+
+.PHONY: log
+log:
+	docker-compose logs -f --tail 0
+
+.PHONY: ps
+ps:
+	docker-compose ps
+
+.PHONY: top
+top:
+	docker-compose top
 
 ########################################################################################################################
 ## pleroma
@@ -51,6 +69,11 @@ migrate:
 backup:
 	bash _helpers/backup.sh
 
-.PHONY: cli-db
-cli-db:
+.PHONY: db-cli
+db-cli:
 	docker-compose exec postgres psql --user=pleroma
+
+# -----------------------------------------------------------------------------
+# https://makefiletutorial.com/#automatic-variables
+./var/postgres:
+	mkdir -p "$@"
