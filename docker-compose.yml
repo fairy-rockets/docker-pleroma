@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: mc4Bk3ycucTfRewcgqSU2n6sxAYuZsjw
       POSTGRES_DB: pleroma
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./var/postgres:/var/lib/postgresql/data
     networks:
       - pleroma-link
     logging:
@@ -32,7 +32,7 @@ services:
       - pleroma-link
       - planet-link
     volumes:
-      - ./data/uploads:/pleroma/uploads
+      - ./var/uploads:/pleroma/uploads
       - ./web/instance/static:/pleroma/static
     depends_on:
       - postgres
@@ -43,6 +43,8 @@ services:
         max-size: '250m'
 
 networks:
+  default:
+    driver: 'null'
   pleroma-link:
     external: false
   planet-link:

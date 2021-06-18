@@ -67,7 +67,7 @@ migrate:
 
 .PHONY: backup
 backup:
-	bash _helpers/backup.sh
+	sudo bash _helpers/backup.sh $(shell id -g) $(shell id -u) var
 
 .PHONY: db-cli
 db-cli:
